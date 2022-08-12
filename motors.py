@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
+# We need proper keyboard library to detect keypresses
+
 import RPi.GPIO as GPIO
-import keyboard
 from datetime import datetime
 import time
 
 #used for print statement to debug
 debug = True
+
 #to use with sensor driven:manual or ai driven:auto
 modes = ["manual","auto"]
 mode = modes[0]
@@ -62,6 +64,7 @@ def setup():
 
 def movement(move_direction, Right_PWM, Left_PWM, Right_CW, Left_CW,Right_CCW,Left_CCW,R_PWM_value = 0,L_PWM_value=0):
     
+    # Used technique: All GPIO pins false, conditionally we will make GPIO pins True according to our convenience 
     GPIO.output(Left_CW,False)
     GPIO.output(Right_CW,False)
     GPIO.output(Left_CCW,False)
@@ -72,13 +75,13 @@ def movement(move_direction, Right_PWM, Left_PWM, Right_CW, Left_CW,Right_CCW,Le
             Left_PWM.ChangeDutyCycle(L_PWM_value)
             
     elif(move_direction == "RIGHT"):
+        
             # Set Right PWM to 0 and Left PWM to 30
             # Enable left motors on
             Right_PWM.ChangeDutyCycle(R_PWM_value)
             Left_PWM.ChangeDutyCycle(L_PWM_value)
             GPIO.output(Right_CW,True)
-            GPIO.output(Left_CCW,True)
-            
+            GPIO.output(Left_CCW,True)      
             
             
     elif(move_direction == "LEFT"):
@@ -91,7 +94,7 @@ def movement(move_direction, Right_PWM, Left_PWM, Right_CW, Left_CW,Right_CCW,Le
             GPIO.output(Right_CCW,True)
             
     elif(move_direction == "FORWARD"):
-            # Set Both PWMs to 30 for forward
+        
             Left_PWM.ChangeDutyCycle(L_PWM_value)
             Right_PWM.ChangeDutyCycle(R_PWM_value)
             GPIO.output(Left_CW,True)
@@ -134,13 +137,14 @@ def movement(move_direction, Right_PWM, Left_PWM, Right_CW, Left_CW,Right_CCW,Le
 
 if __name__ == "__main__":
     
-    delay_in_turn = 0.05
+    delay_in_turn = 0.05  #Delay produced for coarse correction of track
+    
     Right_PWM, Right_CW, Right_CCW, Left_PWM, Left_CCW, Left_CW, sensor_1, sensor_2 = setup()
     
     try:
         while True:
-
-            time.sleep(0.05)
+            time.sleep(0.05) #Delay produced to eliminate random zero values of sensors
+            
             #read and print sensor data in manual mode
             if mode == "manual":
                 sensor_1_data = GPIO.input(sensor_1)
@@ -179,10 +183,6 @@ if __name__ == "__main__":
             #         pass
 
             # On keyboard press, safely exit the program
-            if keyboard.is_pressed("q"):
-                #Save CSV file on q keypress and also want to exit this program safely
-                break
-            
                 
     except Exception as e:
         print(e)
