@@ -3,8 +3,9 @@ import RPi.GPIO as GPIO
 from datetime import datetime
 import time
 import pandas as pd
-import pygame
+import pygame  #Used pygame to detect keypresses
 
+# Initialise Pygame
 pygame.init()
 
 # datetime object containing current date and time
@@ -78,7 +79,7 @@ def setup():
 
 def movement(move_direction, Right_PWM, Left_PWM, Right_CW, Left_CW,Right_CCW,Left_CCW,R_PWM_value = 0,L_PWM_value=0):
         
-    #Store action
+    #store action
     action.append(move_direction)
     
     # Used technique: All GPIO pins false, conditionally we will make GPIO pins True according to our convenience 
@@ -172,6 +173,7 @@ if __name__ == "__main__":
                 print(f"Sensor 1 Data : {sensor_1_data}") if debug else None
                 print(f"Sensor 2 Data : {sensor_2_data}") if debug else None
                 
+                # Store sensor data
                 IR1.append(sensor_1_data)
                 IR2.append(sensor_2_data)
 
@@ -209,9 +211,12 @@ if __name__ == "__main__":
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN:
                     print("Keydown Pressed") if debug else None
+                    
+                    #File saving
                     dict_data  = {'timeStamp' : timeStamps, 'IR1' : IR1, 'IR2' : IR2, 'ACTION' : action}
                     df = pd.DataFrame(dict_data)
-                    #saving the dataframe
+                    
+                    #Saving the dataframe
                     df.to_csv('data_ir.csv',index=False)
                     
                     GPIO.cleanup()
@@ -223,5 +228,4 @@ if __name__ == "__main__":
         GPIO.cleanup()
         
     finally:
-        
         print("Program exits successfully")
