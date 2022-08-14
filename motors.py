@@ -1,12 +1,26 @@
 #!/usr/bin/env python3
-# We need proper keyboard library to detect keypresses
-
 import RPi.GPIO as GPIO
 from datetime import datetime
 import time
+import pandas as pd
+import pygame
+
+pygame.init()
+
+# datetime object containing current date and time
+now = datetime.now()
+
+# Date Time String
+dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
+
+# Data to be stored in CSV
+timeStamps = []
+IR1 = []
+IR2 = []
+action = []
 
 #used for print statement to debug
-debug = True
+debug = False
 
 #to use with sensor driven:manual or ai driven:auto
 modes = ["manual","auto"]
@@ -63,6 +77,9 @@ def setup():
 
 
 def movement(move_direction, Right_PWM, Left_PWM, Right_CW, Left_CW,Right_CCW,Left_CCW,R_PWM_value = 0,L_PWM_value=0):
+        
+    #Store action
+    action.append(move_direction)
     
     # Used technique: All GPIO pins false, conditionally we will make GPIO pins True according to our convenience 
     GPIO.output(Left_CW,False)
@@ -94,7 +111,6 @@ def movement(move_direction, Right_PWM, Left_PWM, Right_CW, Left_CW,Right_CCW,Le
             GPIO.output(Right_CCW,True)
             
     elif(move_direction == "FORWARD"):
-        
             Left_PWM.ChangeDutyCycle(L_PWM_value)
             Right_PWM.ChangeDutyCycle(R_PWM_value)
             GPIO.output(Left_CW,True)
@@ -145,12 +161,19 @@ if __name__ == "__main__":
         while True:
             time.sleep(0.05) #Delay produced to eliminate random zero values of sensors
             
+            #store timestamp
+            timeStamps.append(dt_string)
+            
+
             #read and print sensor data in manual mode
             if mode == "manual":
                 sensor_1_data = GPIO.input(sensor_1)
                 sensor_2_data = GPIO.input(sensor_2)
                 print(f"Sensor 1 Data : {sensor_1_data}") if debug else None
                 print(f"Sensor 2 Data : {sensor_2_data}") if debug else None
+                
+                IR1.append(sensor_1_data)
+                IR2.append(sensor_2_data)
 
             #for now vehicle can be in two modes i.e auto or manual   
             if(mode == "manual"):
@@ -163,7 +186,7 @@ if __name__ == "__main__":
                         movement("LEFT",Right_PWM,Left_PWM,Right_CW,Left_CW,Right_CCW,Left_CCW,R_PWM_value = 80,L_PWM_value=80)
                         time.sleep(delay_in_turn*2)
                 else:
-                        movement("FORWARD",Right_PWM,Left_PWM,Right_CW,Left_CW,Right_CCW,Left_CCW,R_PWM_value = 35,L_PWM_value=35)
+                        movement("FORWARD",Right_PWM,Left_PWM,Right_CW,Left_CW,Right_CCW,Left_CCW,R_PWM_value = 40,L_PWM_value=40)
             elif(mode == "auto"):
                 pass
                 
@@ -183,10 +206,22 @@ if __name__ == "__main__":
             #         pass
 
             # On keyboard press, safely exit the program
+            for event in pygame.event.get():
+                if event.type == pygame.KEYDOWN:
+                    print("Keydown Pressed") if debug else None
+                    dict_data  = {'timeStamp' : timeStamps, 'IR1' : IR1, 'IR2' : IR2, 'ACTION' : action}
+                    df = pd.DataFrame(dict_data)
+                    #saving the dataframe
+                    df.to_csv('data_ir.csv',index=False)
+                    
+                    GPIO.cleanup()
+                    break
+
                 
     except Exception as e:
         print(e)
         GPIO.cleanup()
         
     finally:
+        
         print("Program exits successfully")
