@@ -5,6 +5,11 @@ import time
 import pandas as pd
 import pygame  #Used pygame to detect keypresses
 
+
+# Speed Parameters
+FORWARD_SPEED = 40
+SIDE_SPEED = 85
+
 # Initialise Pygame
 pygame.init()
 
@@ -184,13 +189,13 @@ if __name__ == "__main__":
                 if(sensor_1_data == 0 and sensor_2_data == 0):
                         movement("STOP",Right_PWM,Left_PWM,Right_CW,Left_CW,Right_CCW,Left_CCW,R_PWM_value = 0,L_PWM_value=0)
                 elif(sensor_1_data == 1 and sensor_2_data == 0):
-                        movement("RIGHT",Right_PWM,Left_PWM,Right_CW,Left_CW,Right_CCW,Left_CCW,R_PWM_value = 85,L_PWM_value=85)
+                        movement("RIGHT",Right_PWM,Left_PWM,Right_CW,Left_CW,Right_CCW,Left_CCW,R_PWM_value = SIDE_SPEED,L_PWM_value=SIDE_SPEED)
                         time.sleep(delay_in_turn*2)
                 elif(sensor_1_data == 0 and sensor_2_data == 1):
-                        movement("LEFT",Right_PWM,Left_PWM,Right_CW,Left_CW,Right_CCW,Left_CCW,R_PWM_value = 85,L_PWM_value=85)
+                        movement("LEFT",Right_PWM,Left_PWM,Right_CW,Left_CW,Right_CCW,Left_CCW,R_PWM_value = SIDE_SPEED,L_PWM_value=SIDE_SPEED)
                         time.sleep(delay_in_turn*2)
                 else:
-                        movement("FORWARD",Right_PWM,Left_PWM,Right_CW,Left_CW,Right_CCW,Left_CCW,R_PWM_value = 40,L_PWM_value=40)
+                        movement("FORWARD",Right_PWM,Left_PWM,Right_CW,Left_CW,Right_CCW,Left_CCW,R_PWM_value = FORWARD_SPEED,L_PWM_value=FORWARD_SPEED)
             elif(mode == "auto"):
                 pass
                 
