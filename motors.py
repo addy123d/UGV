@@ -8,12 +8,6 @@ import pygame  #Used pygame to detect keypresses
 # Initialise Pygame
 pygame.init()
 
-# datetime object containing current date and time
-now = datetime.now()
-
-# Date Time String
-dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
-
 # Data to be stored in CSV
 timeStamps = []
 IR1 = []
@@ -150,7 +144,7 @@ def movement(move_direction, Right_PWM, Left_PWM, Right_CW, Left_CW,Right_CCW,Le
         
     
 
-
+flag = False
 
 if __name__ == "__main__":
     
@@ -162,30 +156,38 @@ if __name__ == "__main__":
         while True:
             time.sleep(0.05) #Delay produced to eliminate random zero values of sensors
             
-            #store timestamp
-            timeStamps.append(dt_string)
-            
+            # datetime object containing current date and tzime
+            now = datetime.now()
+
+            # Date Time String
+            dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
 
             #read and print sensor data in manual mode
             if mode == "manual":
                 sensor_1_data = GPIO.input(sensor_1)
                 sensor_2_data = GPIO.input(sensor_2)
+                
                 print(f"Sensor 1 Data : {sensor_1_data}") if debug else None
                 print(f"Sensor 2 Data : {sensor_2_data}") if debug else None
+                
+                #store timestamp
+                timeStamps.append(dt_string)
                 
                 # Store sensor data
                 IR1.append(sensor_1_data)
                 IR2.append(sensor_2_data)
+                
+                
 
             #for now vehicle can be in two modes i.e auto or manual   
             if(mode == "manual"):
                 if(sensor_1_data == 0 and sensor_2_data == 0):
                         movement("STOP",Right_PWM,Left_PWM,Right_CW,Left_CW,Right_CCW,Left_CCW,R_PWM_value = 0,L_PWM_value=0)
                 elif(sensor_1_data == 1 and sensor_2_data == 0):
-                        movement("RIGHT",Right_PWM,Left_PWM,Right_CW,Left_CW,Right_CCW,Left_CCW,R_PWM_value = 80,L_PWM_value=80)
+                        movement("RIGHT",Right_PWM,Left_PWM,Right_CW,Left_CW,Right_CCW,Left_CCW,R_PWM_value = 85,L_PWM_value=85)
                         time.sleep(delay_in_turn*2)
                 elif(sensor_1_data == 0 and sensor_2_data == 1):
-                        movement("LEFT",Right_PWM,Left_PWM,Right_CW,Left_CW,Right_CCW,Left_CCW,R_PWM_value = 80,L_PWM_value=80)
+                        movement("LEFT",Right_PWM,Left_PWM,Right_CW,Left_CW,Right_CCW,Left_CCW,R_PWM_value = 85,L_PWM_value=85)
                         time.sleep(delay_in_turn*2)
                 else:
                         movement("FORWARD",Right_PWM,Left_PWM,Right_CW,Left_CW,Right_CCW,Left_CCW,R_PWM_value = 40,L_PWM_value=40)
@@ -217,15 +219,18 @@ if __name__ == "__main__":
                     df = pd.DataFrame(dict_data)
                     
                     #Saving the dataframe
-                    df.to_csv('data_ir.csv',index=False)
-                    
-                    GPIO.cleanup()
+                    df.to_csv('DataSamples/data_ir.csv',index=False)
+                    flag = True
+                
                     break
+            
+            if flag:
+                break
 
                 
     except Exception as e:
         print(e)
-        GPIO.cleanup()
         
     finally:
-        print("Program exits successfully")
+        print("Program exits successfully") 
+        GPIO.cleanup()
